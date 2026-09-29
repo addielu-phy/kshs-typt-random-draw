@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#07172d" />
+  <link rel="icon" href="data:," />
+  <title>雄中 TYPT 校隊甄選｜IYPT 即席英文演說抽題</title>
+  <style>
+    :root {
+      --navy-950: #061326;
+      --navy-900: #091a31;
+      --navy-800: #102847;
+      --ivory: #fff9ec;
+      --muted: #aab8cb;
+      --line: rgba(205, 221, 243, 0.34);
+      --blue: #63a5ff;
+      --coral: #ff6849;
+      --coral-soft: #ff866c;
+      --danger: #ff3e45;
+      --radius: 18px;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--navy-950);
+      color: var(--ivory);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      min-height: 100svh;
+      overflow: hidden;
+    }
+
+    button { font: inherit; }
+
+    .app {
+      position: relative;
+      min-height: 100svh;
+      isolation: isolate;
+      background:
+        radial-gradient(circle at 81% 23%, rgba(43, 94, 155, 0.16), transparent 31%),
+        radial-gradient(circle at 17% 86%, rgba(27, 74, 128, 0.15), transparent 28%),
+        linear-gradient(145deg, var(--navy-900), var(--navy-950) 68%);
+    }
+
+    .app::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.12;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+    }
+
+    .orbits {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .orbit {
+      position: absolute;
+      border: 1px solid rgba(99, 165, 255, 0.18);
+      border-radius: 50%;
+    }
+
+    .orbit-a { width: 54vw; height: 54vw; right: -14vw; top: -18vw; }
+    .orbit-b { width: 39vw; height: 39vw; right: -5vw; top: -9vw; }
+    .orbit-c { width: 36vw; height: 36vw; left: -21vw; bottom: -23vw; }
+
+    .dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 18px rgba(99, 165, 255, 0.6);
+    }
+
+    .dot-a { right: 5.7vw; top: 18vh; }
+    .dot-b { left: 9.5vw; bottom: 8vh; }
+
+    .screen {
+      min-height: 100svh;
+      padding: clamp(24px, 3.6vw, 68px);
+    }
+
+    .screen[hidden] { display: none !important; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 44px;
+      padding-bottom: clamp(14px, 1.4vw, 24px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      font-size: clamp(16px, 1.5vw, 28px);
+      font-weight: 760;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .progress {
+      color: var(--ivory);
+      font-size: clamp(15px, 1.3vw, 24px);
+      font-variant-numeric: tabular-nums;
+      font-weight: 720;
+      letter-spacing: 0.08em;
+    }
+
+    /* Initial draw screen */
+    #start-screen {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      cursor: pointer;
+    }
+
+    .start-top {
+      text-align: center;
+    }
+
+    .start-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: clamp(14px, 2vw, 34px);
+      color: var(--ivory);
+      font-size: clamp(18px, 1.55vw, 28px);
+      font-weight: 690;
+      letter-spacing: 0.22em;
+    }
+
+    .start-brand::before,
+    .start-brand::after {
+      content: "";
+      width: clamp(48px, 7vw, 120px);
+      height: 1px;
+      background: rgba(255, 249, 236, 0.62);
+    }
+
+    .start-subtitle {
+      margin: 9px 0 0;
+      color: var(--blue);
+      font-size: clamp(14px, 1.28vw, 23px);
+      letter-spacing: 0.27em;
+    }
+
+    .draw-zone {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 0;
+    }
+
+    .draw-rings {
+      position: absolute;
+      width: min(76vw, 82vh);
+      aspect-ratio: 1;
+      border: 1px solid rgba(99, 165, 255, 0.24);
+      border-radius: 50%;
+      animation: rotate 38s linear infinite;
+    }
+
+    .draw-rings::before,
+    .draw-rings::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      inset: 9%;
+      border: 1px dashed rgba(99, 165, 255, 0.30);
+    }
+
+    .draw-rings::after {
+      inset: 22%;
+      border-style: solid;
+      border-color: rgba(99, 165, 255, 0.18);
+    }
+
+    .draw-button {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-content: center;
+      width: min(50vw, 66vh);
+      min-width: 310px;
+      aspect-ratio: 1;
+      padding: clamp(24px, 4vw, 64px);
+      border: 7px solid var(--coral);
+      border-radius: 50%;
+      color: var(--ivory);
+      background: rgba(8, 25, 48, 0.76);
+      box-shadow:
+        0 0 0 1px rgba(255, 104, 73, 0.22),
+        0 0 42px rgba(255, 104, 73, 0.18),
+        inset 0 0 46px rgba(255, 104, 73, 0.04);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 220ms var(--ease), box-shadow 220ms var(--ease), background 220ms var(--ease);
+    }
+
+    .draw-button:hover,
+    .draw-button:focus-visible {
+      transform: scale(1.025);
+      background: rgba(15, 38, 68, 0.9);
+      box-shadow: 0 0 60px rgba(255, 104, 73, 0.34), inset 0 0 50px rgba(255, 104, 73, 0.08);
+      outline: none;
+    }
+
+    .draw-button:active { transform: scale(0.985); }
+
+    .spark {
+      width: clamp(36px, 4vw, 70px);
+      height: clamp(36px, 4vw, 70px);
+      margin: 0 auto clamp(14px, 2vh, 26px);
+      color: var(--coral);
+    }
+
+    .draw-main {
+      display: block;
+      font-size: clamp(26px, 3.15vw, 58px);
+      font-weight: 830;
+      letter-spacing: 0.02em;
+      line-height: 1.16;
+    }
+
+    .draw-en {
+      display: block;
+      margin-top: clamp(12px, 2vh, 24px);
+      color: var(--coral-soft);
+      font-size: clamp(15px, 1.45vw, 25px);
+      font-weight: 760;
+      letter-spacing: 0.27em;
+    }
+
+    .draw-meta {
+      display: block;
+      width: fit-content;
+      margin: clamp(18px, 2.4vh, 32px) auto 0;
+      padding-top: clamp(12px, 1.5vh, 20px);
+      border-top: 2px solid var(--coral);
+      color: var(--muted);
+      font-size: clamp(14px, 1.16vw, 21px);
+      letter-spacing: 0.14em;
+    }
+
+    .start-footer,
+    .result-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 24px;
+      color: var(--muted);
+      font-size: clamp(12px, 1vw, 17px);
+      letter-spacing: 0.06em;
+    }
+
+    .key {
+      display: inline-grid;
+      min-width: 30px;
+      height: 30px;
+      place-items: center;
+      margin-right: 8px;
+      border: 1px solid rgba(205, 221, 243, 0.62);
+      border-radius: 5px;
+      color: var(--ivory);
+      font-size: 13px;
+      font-weight: 780;
+    }
+
+    /* Shuffle overlay */
+    .shuffle-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      background: rgba(6, 19, 38, 0.94);
+      backdrop-filter: blur(12px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 180ms ease, visibility 180ms ease;
+    }
+
+    .shuffle-overlay.show { opacity: 1; visibility: visible; }
+
+    .shuffle-number {
+      color: var(--coral);
+      font-size: min(23vw, 32vh);
+      font-weight: 880;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.08em;
+      text-shadow: 0 0 45px rgba(255, 104, 73, 0.3);
+    }
+
+    /* Result screen */
+    #result-screen {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .result-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(310px, 0.9fr);
+      gap: clamp(28px, 4vw, 76px);
+      min-height: 0;
+      padding: clamp(24px, 4vh, 62px) 0 clamp(12px, 2vh, 28px);
+    }
+
+    .problem-pane {
+      min-width: 0;
+      padding-right: clamp(24px, 3.2vw, 60px);
+      border-right: 1px solid var(--line);
+    }
+
+    .problem-no {
+      margin: 0;
+      color: var(--coral);
+      font-size: clamp(64px, 8.2vw, 148px);
+      font-weight: 880;
+      line-height: 0.82;
+      letter-spacing: -0.075em;
+    }
+
+    .problem-meta {
+      margin-top: clamp(18px, 2.2vh, 30px);
+      color: var(--ivory);
+      font-size: clamp(14px, 1.45vw, 25px);
+      font-weight: 720;
+      letter-spacing: 0.045em;
+    }
+
+    .problem-meta .category { color: var(--blue); }
+
+    .title-en {
+      margin: clamp(18px, 2.7vh, 36px) 0 0;
+      font-size: clamp(42px, 5.6vw, 100px);
+      font-weight: 850;
+      line-height: 0.98;
+      letter-spacing: -0.045em;
+      text-wrap: balance;
+    }
+
+    .title-zh {
+      margin: clamp(13px, 1.7vh, 24px) 0 0;
+      font-size: clamp(26px, 3.15vw, 56px);
+      font-weight: 760;
+      line-height: 1.14;
+      letter-spacing: 0.02em;
+    }
+
+    .accent-line {
+      width: clamp(54px, 6vw, 104px);
+      height: 5px;
+      margin: clamp(22px, 3vh, 38px) 0;
+      background: linear-gradient(90deg, var(--coral), var(--coral) 58%, rgba(255, 104, 73, 0));
+    }
+
+    .prompt-en {
+      max-width: 1060px;
+      margin: 0;
+      color: var(--ivory);
+      font-size: clamp(23px, 2.25vw, 41px);
+      font-weight: 510;
+      line-height: 1.38;
+      letter-spacing: 0.005em;
+      text-wrap: pretty;
+    }
+
+    .prompt-zh {
+      max-width: 1060px;
+      margin: clamp(18px, 2.7vh, 34px) 0 0;
+      color: #dbe5f2;
+      font-size: clamp(18px, 1.58vw, 29px);
+      font-weight: 500;
+      line-height: 1.55;
+      letter-spacing: 0.025em;
+      text-wrap: pretty;
+    }
+
+    .timer-pane {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(14px, 2vh, 24px);
+    }
+
+    .timer-label {
+      color: var(--muted);
+      font-size: clamp(12px, 1vw, 17px);
+      font-weight: 760;
+      letter-spacing: 0.18em;
+      text-align: center;
+    }
+
+    .timer {
+      color: var(--coral);
+      font-size: clamp(78px, 10.4vw, 178px);
+      font-weight: 860;
+      font-variant-numeric: tabular-nums;
+      line-height: 0.95;
+      letter-spacing: -0.07em;
+      text-align: center;
+      transition: color 180ms ease, transform 180ms ease;
+    }
+
+    .timer.warning { color: #ffb14f; }
+    .timer.finished {
+      color: var(--danger);
+      animation: time-pulse 900ms ease-in-out infinite alternate;
+    }
+
+    .control {
+      width: 100%;
+      min-height: clamp(62px, 8vh, 94px);
+      border-radius: 10px;
+      color: var(--ivory);
+      font-size: clamp(19px, 1.9vw, 34px);
+      font-weight: 780;
+      cursor: pointer;
+      transition: transform 160ms var(--ease), background 160ms ease, border-color 160ms ease;
+    }
+
+    .control:hover,
+    .control:focus-visible { transform: translateY(-2px); outline: none; }
+    .control:active { transform: translateY(0); }
+
+    .control-primary {
+      border: 1px solid var(--coral-soft);
+      background: var(--coral);
+      box-shadow: 0 16px 40px rgba(255, 104, 73, 0.16);
+    }
+
+    .control-primary:hover,
+    .control-primary:focus-visible { background: #ff765a; }
+
+    .control-secondary {
+      border: 1px solid rgba(205, 221, 243, 0.86);
+      background: rgba(6, 19, 38, 0.22);
+    }
+
+    .control-secondary:hover,
+    .control-secondary:focus-visible { background: rgba(99, 165, 255, 0.1); border-color: var(--blue); }
+
+    .control-small {
+      align-self: center;
+      border: 0;
+      color: var(--muted);
+      background: transparent;
+      font-size: clamp(13px, 1vw, 16px);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .control-small:hover,
+    .control-small:focus-visible { color: var(--ivory); outline: none; }
+
+    .footer-button {
+      padding: 5px 0;
+      border: 0;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font-size: inherit;
+      letter-spacing: inherit;
+    }
+
+    .footer-button:hover,
+    .footer-button:focus-visible { color: var(--ivory); outline: none; }
+
+    .divider { width: 1px; height: 24px; background: var(--line); }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 30px;
+      z-index: 30;
+      max-width: min(560px, calc(100vw - 32px));
+      padding: 14px 20px;
+      border: 1px solid rgba(205, 221, 243, 0.36);
+      border-radius: 10px;
+      color: var(--ivory);
+      background: rgba(8, 25, 48, 0.96);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.36);
+      font-size: 15px;
+      transform: translate(-50%, 22px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms var(--ease);
+    }
+
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @keyframes rotate { to { transform: rotate(360deg); } }
+    @keyframes time-pulse { to { transform: scale(1.035); } }
+
+    @media (max-aspect-ratio: 5/4), (max-width: 900px) {
+      body { overflow: auto; }
+      .screen { min-height: 100svh; }
+      .start-brand { letter-spacing: 0.11em; }
+      .start-brand::before, .start-brand::after { display: none; }
+      .draw-button { width: min(76vw, 52vh); min-width: 270px; }
+      .draw-rings { width: min(94vw, 68vh); }
+      #result-screen { min-height: 100svh; }
+      .result-layout {
+        grid-template-columns: 1fr;
+        gap: 26px;
+        overflow: auto;
+      }
+      .problem-pane { padding-right: 0; padding-bottom: 28px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .timer-pane { padding: 10px 0 18px; }
+      .timer { font-size: clamp(84px, 22vw, 150px); }
+      .control { min-height: 68px; }
+      .result-footer { padding-top: 10px; }
+    }
+
+    @media (max-height: 680px) and (min-aspect-ratio: 5/4) {
+      .screen { padding-top: 20px; padding-bottom: 18px; }
+      .result-layout { padding-top: 22px; gap: 34px; }
+      .problem-no { font-size: clamp(52px, 7vw, 100px); }
+      .title-en { margin-top: 12px; font-size: clamp(34px, 4.8vw, 70px); }
+      .title-zh { margin-top: 8px; font-size: clamp(23px, 2.6vw, 42px); }
+      .accent-line { margin: 15px 0; height: 4px; }
+      .prompt-en { font-size: clamp(19px, 1.9vw, 30px); }
+      .prompt-zh { margin-top: 12px; font-size: clamp(16px, 1.3vw, 23px); }
+      .timer { font-size: clamp(68px, 9vw, 125px); }
+      .control { min-height: 56px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app">
+    <div class="orbits" aria-hidden="true">
+      <span class="orbit orbit-a"></span>
+      <span class="orbit orbit-b"></span>
+      <span class="orbit orbit-c"></span>
+      <span class="dot dot-a"></span>
+      <span class="dot dot-b"></span>
+    </div>
+
+    <section class="screen" id="start-screen" aria-labelledby="start-title">
+      <header class="start-top">
+        <div class="start-brand">雄中 TYPT 校隊甄選</div>
+        <p class="start-subtitle">IYPT 即席英文演說抽題</p>
+      </header>
+
+      <div class="draw-zone">
+        <div class="draw-rings" aria-hidden="true"></div>
+        <button class="draw-button" id="draw-button" type="button" aria-describedby="draw-meta">
+          <svg class="spark" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M32 4v13M32 47v13M4 32h13M47 32h13M12.2 12.2l9.2 9.2M42.6 42.6l9.2 9.2M51.8 12.2l-9.2 9.2M21.4 42.6l-9.2 9.2" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="32" cy="32" r="7" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          </svg>
+          <span class="draw-main" id="start-title">點擊螢幕<br />隨機抽出一題</span>
+          <span class="draw-en">DRAW A PROBLEM</span>
+          <span class="draw-meta" id="draw-meta">30 題 · 不重複抽題</span>
+        </button>
+      </div>
+
+      <footer class="start-footer">
+        <span><span class="key">F</span>全螢幕</span>
+      </footer>
+    </section>
+
+    <section class="screen" id="result-screen" aria-labelledby="problem-title" hidden>
+      <header class="topbar">
+        <div class="brand">雄中 TYPT 校隊甄選</div>
+        <div class="progress" id="progress">已抽 1 / 30</div>
+      </header>
+
+      <div class="result-layout" aria-live="polite">
+        <article class="problem-pane">
+          <p class="problem-no" id="problem-no">#02</p>
+          <div class="problem-meta">
+            <span id="problem-year">IYPT 2024</span>
+            <span aria-hidden="true"> · </span>
+            <span id="problem-id">Problem 2</span>
+            <span aria-hidden="true"> · </span>
+            <span class="category" id="problem-category">OPTICS</span>
+          </div>
+          <h1 class="title-en" id="problem-title">Droplet Microscope</h1>
+          <p class="title-zh" id="problem-title-zh">水滴顯微鏡</p>
+          <div class="accent-line" aria-hidden="true"></div>
+          <p class="prompt-en" id="problem-en">Use one water drop as a lens. Study image size and sharpness.</p>
+          <p class="prompt-zh" id="problem-zh">用玻璃上的一滴水作為透鏡，研究放大率與影像清晰度。</p>
+        </article>
+
+        <aside class="timer-pane" aria-label="演說計時器">
+          <div class="timer-label">IMPROMPTU SPEECH</div>
+          <div class="timer" id="timer" role="timer" aria-live="off">01:30</div>
+          <button class="control control-primary" id="timer-button" type="button">▶&nbsp; 開始計時</button>
+          <button class="control control-secondary" id="next-button" type="button">抽下一題</button>
+          <button class="control-small" id="timer-reset" type="button">重設 1:30</button>
+        </aside>
+      </div>
+
+      <footer class="result-footer">
+        <button class="footer-button" id="fullscreen-button" type="button"><span class="key">F</span>全螢幕</button>
+        <span class="divider" aria-hidden="true"></span>
+        <button class="footer-button" id="deck-reset" type="button"><span class="key">R</span>重設題庫</button>
+      </footer>
+    </section>
+
+    <div class="shuffle-overlay" id="shuffle-overlay" aria-hidden="true">
+      <div class="shuffle-number" id="shuffle-number">#17</div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <script>
+    const PROBLEMS = [
+      { year: 1997, number: 17, category: "MECHANICS", title: "Leap", titleZh: "跳躍", en: "How does jump height change with squat depth?", zh: "下蹲越深，跳躍高度會如何改變？" },
+      { year: 2000, number: 13, category: "MECHANICS", title: "Rolling Can", titleZh: "滾動水罐", en: "A can with some water rolls down a slope. Study how it moves.", zh: "裝有部分水的罐子沿斜面滾下，研究水量如何影響它的運動。" },
+      { year: 2008, number: 2, category: "MECHANICS", title: "Winged Seed", titleZh: "翼狀種子", en: "Watch how a maple seed falls and spins. Find what changes its motion.", zh: "觀察楓樹種子下落與旋轉，研究哪些因素會改變它的運動。" },
+      { year: 2008, number: 8, category: "MECHANICS", title: "Astroblaster", titleZh: "疊球反彈", en: "Drop a small ball on top of a large ball. Why does the small ball fly so high?", zh: "把小球疊在大球上一起落下，為什麼小球會彈得很高？" },
+      { year: 2013, number: 1, category: "MECHANICS", title: "Paper Bridge", titleZh: "紙橋", en: "Build a strong bridge from one A4 sheet. Find the best shape.", zh: "只用一張 A4 紙製作紙橋，研究哪種形狀最能承重。" },
+      { year: 2017, number: 1, category: "MECHANICS", title: "Egg Landing", titleZh: "雞蛋防摔", en: "Build a small device that protects a raw egg dropped from 2.5 metres.", zh: "設計一個小型裝置，保護生雞蛋從 2.5 公尺落下而不破。" },
+
+      { year: 2004, number: 11, category: "WAVES & SOUND", title: "String Telephone", titleZh: "棉線電話", en: "How do string length and tension change the sound?", zh: "棉線的長度與張力如何影響聲音傳遞？" },
+      { year: 2008, number: 9, category: "WAVES & SOUND", title: "Flute", titleZh: "簡易笛子", en: "Make a flute from a tube. How do the hole size and position change the sound?", zh: "用管子製作簡易笛子，研究孔洞大小與位置如何影響聲音。" },
+      { year: 2009, number: 2, category: "WAVES & SOUND", title: "Coupled Compasses", titleZh: "耦合指南針", en: "Put two compasses close together. Move one needle and watch the other.", zh: "把兩個指南針放近，撥動一支磁針並觀察另一支的運動。" },
+      { year: 2015, number: 10, category: "WAVES & SOUND", title: "Singing Blades of Grass", titleZh: "會唱歌的草葉", en: "Blow across a strip of grass or paper to make sound. Study what changes the pitch.", zh: "對著草葉或紙條吹氣發聲，研究哪些因素會改變音高。" },
+      { year: 2019, number: 5, category: "WAVES & SOUND", title: "Filling Up a Bottle", titleZh: "裝水瓶的聲音", en: "Let water flow into a bottle. How does the sound change as the bottle fills?", zh: "讓水流入瓶中，研究聲音如何隨水位上升而改變。" },
+      { year: 2021, number: 11, category: "WAVES & SOUND", title: "Guitar String", titleZh: "吉他弦", en: "Drive a guitar string near its natural frequency and study its motion.", zh: "以接近自然頻率的週期性外力驅動吉他弦，研究它的振動。" },
+
+      { year: 2008, number: 3, category: "OPTICS", title: "Pin-hole Camera", titleZh: "針孔相機", en: "Build a pin-hole camera. Find the hole size that gives the best image.", zh: "製作針孔相機，找出能得到最佳影像的孔洞大小。" },
+      { year: 2008, number: 16, category: "OPTICS", title: "Black Spoon", titleZh: "黑湯匙鏡面", en: "Cover a spoon with soot and put it in water. Why does it look shiny?", zh: "用蠟燭煙燻黑湯匙後放入水中，為什麼它看起來會發亮？" },
+      { year: 2015, number: 12, category: "OPTICS", title: "Thick Lens", titleZh: "水瓶透鏡", en: "Fill a bottle with water and use it as a lens. Study its focus.", zh: "把瓶子裝水當成透鏡，研究它的焦距與聚光能力。" },
+      { year: 2015, number: 16, category: "OPTICS", title: "Wet and Dark", titleZh: "濕衣服變深色", en: "Why do clothes usually look darker when they are wet?", zh: "為什麼衣服或布料沾水後通常看起來比較深色？" },
+      { year: 2017, number: 3, category: "OPTICS", title: "Single Lens Telescope", titleZh: "單透鏡望遠鏡", en: "Make a telescope with one lens and a small hole. Study the image.", zh: "用一片透鏡和一個小孔製作望遠鏡，研究影像的大小與清晰度。" },
+      { year: 2024, number: 2, category: "OPTICS", title: "Droplet Microscope", titleZh: "水滴顯微鏡", en: "Use one water drop as a lens. Study image size and sharpness.", zh: "用玻璃上的一滴水作為透鏡，研究放大率與影像清晰度。" },
+
+      { year: 1998, number: 14, category: "THERMAL & FLUIDS", title: "Water Rise", titleZh: "布條吸水", en: "Put one end of a cloth strip in water. How fast and how high does the water rise?", zh: "將布條一端浸入水中，研究水上升的速度與最大高度。" },
+      { year: 2014, number: 7, category: "THERMAL & FLUIDS", title: "Pot-in-pot Refrigerator", titleZh: "陶罐冰箱", en: "Use two pots, wet sand and evaporation to keep food cool.", zh: "利用大小陶罐、濕沙與蒸發作用降溫，研究如何得到最佳冷卻效果。" },
+      { year: 2015, number: 5, category: "THERMAL & FLUIDS", title: "Two Balloons", titleZh: "兩顆氣球", en: "Connect two balloons. Which way will the air flow?", zh: "把兩顆大小不同的氣球連通，空氣會往哪個方向流動？" },
+      { year: 2018, number: 4, category: "THERMAL & FLUIDS", title: "Heron's Fountain", titleZh: "希羅噴泉", en: "Build a fountain powered only by water and trapped air. Study the jet height.", zh: "製作只靠水與密閉空氣運作的噴泉，研究水柱高度。" },
+      { year: 2022, number: 13, category: "THERMAL & FLUIDS", title: "Candle Powered Turbine", titleZh: "蠟燭紙渦輪", en: "Hang a paper spiral over a candle and make it turn. Find what gives the largest torque.", zh: "把紙螺旋懸掛在蠟燭上方使它旋轉，研究如何產生最大轉矩。" },
+      { year: 2025, number: 6, category: "THERMAL & FLUIDS", title: "Dripping Faucet", titleZh: "滴水水龍頭", en: "Study how water flow changes the time between drops.", zh: "研究水流量如何影響水滴大小與相鄰水滴的時間。" },
+
+      { year: 2004, number: 16, category: "ELECTRICITY & MAGNETISM", title: "Small Fields", titleZh: "測量地磁場", en: "Use a compass needle to measure Earth's magnetic field.", zh: "用指南針設計裝置，測量地球磁場的大小。" },
+      { year: 2014, number: 16, category: "ELECTRICITY & MAGNETISM", title: "Magnetic Brakes", titleZh: "磁力煞車", en: "Drop a magnet through a metal tube. Why does it fall slowly?", zh: "讓磁鐵穿過金屬管下落，研究它為什麼會緩慢下降。" },
+      { year: 2020, number: 10, category: "ELECTRICITY & MAGNETISM", title: "Conducting Lines", titleZh: "鉛筆導線", en: "Draw a pencil line on paper and measure its electrical resistance.", zh: "在紙上畫鉛筆線，測量並研究它的電阻。" },
+      { year: 2021, number: 8, category: "ELECTRICITY & MAGNETISM", title: "Fuses", titleZh: "保險絲", en: "Pass current through a thin wire. What controls the time before it melts?", zh: "讓電流通過細金屬線，研究哪些因素決定它多久會熔斷。" },
+      { year: 2024, number: 10, category: "ELECTRICITY & MAGNETISM", title: "Magnetic Gear", titleZh: "磁力齒輪", en: "Put magnets on several spinners. Turn one and watch the others.", zh: "在數個指尖陀螺上裝磁鐵，轉動一個並觀察其他陀螺。" },
+      { year: 2026, number: 2, category: "ELECTRICITY & MAGNETISM", title: "Electrical Damping", titleZh: "電磁阻尼", en: "Let a magnet on a spring move inside a coil. Study how the motion slows down.", zh: "讓彈簧上的磁鐵在線圈內振動，研究它的運動如何逐漸減弱。" }
+    ];
+
+    const STORAGE_KEY = "kshs-typt-draw-v1";
+    const SPEECH_SECONDS = 90;
+    const startScreen = document.querySelector("#start-screen");
+    const resultScreen = document.querySelector("#result-screen");
+    const drawButton = document.querySelector("#draw-button");
+    const nextButton = document.querySelector("#next-button");
+    const timerButton = document.querySelector("#timer-button");
+    const timerResetButton = document.querySelector("#timer-reset");
+    const deckResetButton = document.querySelector("#deck-reset");
+    const fullscreenButton = document.querySelector("#fullscreen-button");
+    const timerEl = document.querySelector("#timer");
+    const shuffleOverlay = document.querySelector("#shuffle-overlay");
+    const shuffleNumber = document.querySelector("#shuffle-number");
+    const toast = document.querySelector("#toast");
+
+    let state = loadState();
+    let currentProblem = null;
+    let isDrawing = false;
+    let secondsLeft = SPEECH_SECONDS;
+    let timerId = null;
+    let timerRunning = false;
+    let toastId = null;
+
+    function secureRandom(max) {
+      if (max <= 1) return 0;
+      const limit = Math.floor(0x100000000 / max) * max;
+      const values = new Uint32Array(1);
+      do { crypto.getRandomValues(values); } while (values[0] >= limit);
+      return values[0] % max;
+    }
+
+    function shuffledDeck() {
+      const deck = Array.from({ length: PROBLEMS.length }, (_, i) => i);
+      for (let i = deck.length - 1; i > 0; i -= 1) {
+        const j = secureRandom(i + 1);
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+      return deck;
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+        if (saved && Array.isArray(saved.deck) && Number.isInteger(saved.drawn)) {
+          const valid = saved.deck.length === PROBLEMS.length &&
+            new Set(saved.deck).size === PROBLEMS.length &&
+            saved.deck.every(i => Number.isInteger(i) && i >= 0 && i < PROBLEMS.length) &&
+            saved.drawn >= 0 && saved.drawn <= PROBLEMS.length;
+          if (valid) return saved;
+        }
+      } catch (_) {}
+      return { deck: shuffledDeck(), drawn: 0 };
+    }
+
+    function saveState() {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(toastId);
+      toastId = window.setTimeout(() => toast.classList.remove("show"), 2400);
+    }
+
+    function updateStartMeta() {
+      const remaining = PROBLEMS.length - state.drawn;
+      document.querySelector("#draw-meta").textContent = `${remaining} 題可抽 · 不重複抽題`;
+    }
+
+    async function drawProblem() {
+      if (isDrawing) return;
+      if (state.drawn >= PROBLEMS.length) {
+        showToast("30 題都已抽完，請按 R 重設題庫。");
+        return;
+      }
+
+      isDrawing = true;
+      resetTimer(false);
+      shuffleOverlay.classList.add("show");
+      shuffleOverlay.setAttribute("aria-hidden", "false");
+
+      const start = performance.now();
+      const duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 180 : 1050;
+      await new Promise(resolve => {
+        function tick(now) {
+          const sample = PROBLEMS[secureRandom(PROBLEMS.length)];
+          shuffleNumber.textContent = `#${String(sample.number).padStart(2, "0")}`;
+          if (now - start < duration) requestAnimationFrame(tick);
+          else resolve();
+        }
+        requestAnimationFrame(tick);
+      });
+
+      const problemIndex = state.deck[state.drawn];
+      currentProblem = PROBLEMS[problemIndex];
+      state.drawn += 1;
+      saveState();
+      renderProblem(currentProblem);
+
+      shuffleNumber.textContent = `#${String(currentProblem.number).padStart(2, "0")}`;
+      await new Promise(resolve => setTimeout(resolve, 180));
+      startScreen.hidden = true;
+      resultScreen.hidden = false;
+      shuffleOverlay.classList.remove("show");
+      shuffleOverlay.setAttribute("aria-hidden", "true");
+      isDrawing = false;
+      timerButton.focus({ preventScroll: true });
+    }
+
+    function renderProblem(problem) {
+      document.querySelector("#problem-no").textContent = `#${String(problem.number).padStart(2, "0")}`;
+      document.querySelector("#problem-year").textContent = `IYPT ${problem.year}`;
+      document.querySelector("#problem-id").textContent = `Problem ${problem.number}`;
+      document.querySelector("#problem-category").textContent = problem.category;
+      document.querySelector("#problem-title").textContent = problem.title;
+      document.querySelector("#problem-title-zh").textContent = problem.titleZh;
+      document.querySelector("#problem-en").textContent = problem.en;
+      document.querySelector("#problem-zh").textContent = problem.zh;
+      document.querySelector("#progress").textContent = `已抽 ${state.drawn} / ${PROBLEMS.length}`;
+      nextButton.textContent = state.drawn >= PROBLEMS.length ? "題庫已抽完" : "抽下一題";
+      nextButton.disabled = state.drawn >= PROBLEMS.length;
+      nextButton.style.opacity = nextButton.disabled ? ".45" : "1";
+      nextButton.style.cursor = nextButton.disabled ? "not-allowed" : "pointer";
+    }
+
+    function formatTime(total) {
+      const mins = Math.floor(total / 60);
+      const secs = total % 60;
+      return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function updateTimer() {
+      timerEl.textContent = formatTime(secondsLeft);
+      timerEl.classList.toggle("warning", secondsLeft > 0 && secondsLeft <= 10);
+      timerEl.classList.toggle("finished", secondsLeft === 0);
+    }
+
+    function toggleTimer() {
+      if (secondsLeft === 0) resetTimer(false);
+      if (timerRunning) pauseTimer();
+      else startTimer();
+    }
+
+    function startTimer() {
+      if (timerRunning) return;
+      timerRunning = true;
+      timerButton.innerHTML = "Ⅱ&nbsp; 暫停計時";
+      let target = Date.now() + secondsLeft * 1000;
+      timerId = window.setInterval(() => {
+        const next = Math.max(0, Math.ceil((target - Date.now()) / 1000));
+        if (next !== secondsLeft) {
+          secondsLeft = next;
+          updateTimer();
+          if (secondsLeft === 0) {
+            pauseTimer(true);
+            playEndTone();
+          }
+        }
+      }, 150);
+    }
+
+    function pauseTimer(finished = false) {
+      window.clearInterval(timerId);
+      timerId = null;
+      timerRunning = false;
+      timerButton.innerHTML = finished ? "↻&nbsp; 再計時一次" : "▶&nbsp; 繼續計時";
+    }
+
+    function resetTimer(focus = true) {
+      window.clearInterval(timerId);
+      timerId = null;
+      timerRunning = false;
+      secondsLeft = SPEECH_SECONDS;
+      timerButton.innerHTML = "▶&nbsp; 開始計時";
+      updateTimer();
+      if (focus && !resultScreen.hidden) timerButton.focus({ preventScroll: true });
+    }
+
+    function playEndTone() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const context = new AudioContext();
+        const gain = context.createGain();
+        gain.gain.setValueAtTime(0.0001, context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.72);
+        const oscillator = context.createOscillator();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(660, context.currentTime);
+        oscillator.frequency.setValueAtTime(880, context.currentTime + 0.28);
+        oscillator.connect(gain).connect(context.destination);
+        oscillator.start();
+        oscillator.stop(context.currentTime + 0.75);
+      } catch (_) {}
+    }
+
+    function resetDeck() {
+      if (!window.confirm("確定要清除已抽紀錄，重新洗牌 30 題嗎？")) return;
+      state = { deck: shuffledDeck(), drawn: 0 };
+      currentProblem = null;
+      saveState();
+      resetTimer(false);
+      resultScreen.hidden = true;
+      startScreen.hidden = false;
+      updateStartMeta();
+      drawButton.focus({ preventScroll: true });
+      showToast("題庫已重新洗牌。");
+    }
+
+    async function toggleFullscreen() {
+      try {
+        if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+        else await document.exitFullscreen();
+      } catch (_) {
+        showToast("瀏覽器未允許全螢幕，請使用瀏覽器的全螢幕功能。");
+      }
+    }
+
+    drawButton.addEventListener("click", drawProblem);
+    startScreen.addEventListener("click", event => {
+      if (event.target.closest("button")) return;
+      drawProblem();
+    });
+    nextButton.addEventListener("click", drawProblem);
+    timerButton.addEventListener("click", toggleTimer);
+    timerResetButton.addEventListener("click", () => resetTimer());
+    deckResetButton.addEventListener("click", resetDeck);
+    fullscreenButton.addEventListener("click", toggleFullscreen);
+
+    document.addEventListener("keydown", event => {
+      if (event.repeat || isDrawing) return;
+      const key = event.key.toLowerCase();
+      if (key === "f") {
+        event.preventDefault();
+        toggleFullscreen();
+      } else if (key === "r") {
+        event.preventDefault();
+        resetDeck();
+      } else if (event.code === "Space" && !resultScreen.hidden) {
+        event.preventDefault();
+        toggleTimer();
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        if (resultScreen.hidden || !nextButton.disabled) drawProblem();
+      }
+    });
+
+    updateStartMeta();
+    updateTimer();
+  </script>
+</body>
+</html>
